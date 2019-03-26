@@ -1,0 +1,200 @@
+安全
+
+	物理安全
+		机房：
+			恒温、恒湿
+			防静电
+			强电、弱电
+			审核程序
+	
+	系统安全		
+	应用安全
+
+
+
+系统安全
+
+
+1、避免误操作，使用普通用户登录系统 
+
+
+		sudo机制
+
+			以普通用户登录系统 
+			
+		/etc/sudoers文件   ----   visudo命令
+
+		文件格式：
+
+			用户名       机器名称=命令名称
+			
+			
+		1、针对单个用户授权 
+
+		格式：
+
+			用户名       机器名称=命令名称
+
+		[root@node_01 ~]# visudo 
+
+			99 martin  ALL=/usr/sbin/fdisk
+			
+		[root@node_01 ~]# su - martin
+		[martin@node_01 ~]$ sudo fdisk /dev/vda 
+
+		以sudo机制执行命令后，会在系统的/var/log/secure日志里有相应的记录 
+
+			martin  ALL=/usr/sbin/fdisk /dev/vdb
+
+			martin  ALL=/usr/sbin/fdisk /dev/vdb,/usr/bin/yum
+
+			mike    ALL=NOPASSWD:/usr/bin/yum
+
+			martin  ALL=NOPASSWD:ALL,!/usr/bin/rm,!/usr/bin/yum
+
+			
+			
+		2、针对用户组授权
+
+		格式： 
+
+			%用户组名	机器名称=命令
+			
+			%jishu  ALL=NOPASSWD:/usr/bin/yum
+
+			
+		注意：
+
+			
+
+
+		3、命令别名
+
+			Cmnd_Alias SOFTWARE = /bin/rpm, /usr/bin/up2date, /usr/bin/yum			>>>定义别名
+			martin  ALL=NOPASSWD:SOFTWARE											>>>使用别名
+
+
+		自定义别名时，要求别名均为大写
+
+
+		
+		严格控制权限
+		
+			r  w  x , suid, sgid, sticky bit 
+			
+				chmod, chown, setfacl  
+				
+			隐藏属性(关键性文件)：
+			
+					/etc/passwd,  /etc/sysctl.conf 
+					
+				i	避免修改、删除
+				
+					chattr 
+					lsattr
+					
+				a	避免追加 
+			
+
+
+2、登录安全
+
+	1) openssh-server    /etc/ssh/sshd_config
+	
+		修改默认端口、禁止root用户登录、禁止密码认证
+		防火墙规则
+		
+	2) PAM模块认证
+	
+		用户SSH登录失败尝试次数超出限制后锁定用户，暴力破解  
+
+			[root@localhost ~]# vim /etc/pam.d/sshd 
+
+				auth       required     pam_tally2.so deny=3 unlock_time=60 even_deny_root
+				
+					deny=3	最多允许同一个用户连接失败3次
+					unlock_time=60		锁60分钟 
+					even_deny_root		同样针对root用户有效 
+
+
+			解锁用户：
+
+				[root@localhost ~]# pam_tally2 -u martin -r --reset		
+
+	3) 密码 
+	
+		a. 定期修改密码 
+		b. 强密码 
+		
+			启用密码复杂性要求 
+			
+			[root@localhost ~]# vim /etc/pam.d/system-auth-ac 
+
+			password    requisite     pam_cracklib.so  type=reject_username minlen=6 lcredit=1 ucredit=1 dcredit=1 ocredit=1 difok=6 enforce_for_root	
+				
+				minlen=6：  密码最小长度
+				lcredit=1	密码里至少有一个小写字母 
+				ucredit=1	至少有一个大写字母
+				dcredit=1	至少有一个数字 
+				ocredit=1	至少有一个特殊字符  
+				difok=6 		
+				enforce_for_root	针对root用户同样用户
+				type=reject_username
+
+
+		ldd命令查看应用程序加载的库文件 
+
+
+		
+
+
+	4) 查看用户登录信息
+	
+		a. 当前的用户登录信息 
+		
+			[root@node01 ~]# who
+
+		b、/var/log/wtmp 
+		
+			记录所有用户登录信息 
+			
+			last命令 
+
+		c、/var/log/btmp 
+		
+			记录所有失败的登录行为 
+			
+			lastb命令
+
+
+
+
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+
+
+
+
+
+
+
+			
+		
+	

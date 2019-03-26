@@ -1,0 +1,123 @@
+PAM ---  Pluggable Authentication Module
+
+	可插拔的认证模块 
+	
+	
+PAM认证相关的目录：
+
+1、存放pam模块的路径 
+
+	/lib64/security
+	
+2、各应用程序使用pam模块实现认证的配置文件
+	
+	/etc/pam.d/应用程序
+		
+		
+只有加载了pam库文件的应用程序才可以调用pam模块来实现认证
+
+[root@localhost ~]# ldd /usr/sbin/sshd | grep pam
+	libpam.so.0 => /lib64/libpam.so.0 (0x00007f4f32e09000)
+
+
+
+示例：
+
+1、启用密码复杂性 
+
+[root@localhost ~]# vim /etc/pam.d/system-auth-ac 
+
+password    requisite     pam_cracklib.so  type=reject_username minlen=6 lcredit=1 ucredit=1 dcredit=1 ocredit=1 difok=6 enforce_for_root	
+	
+	minlen=6：  密码最小长度
+	lcredit=1	密码里至少有一个小写字母 
+	ucredit=1	至少有一个大写字母
+	dcredit=1	至少有一个数字 
+	ocredit=1	至少有一个特殊字符  
+	difok=6 		
+	enforce_for_root	针对root用户同样用户
+	type=reject_username	
+	
+	
+	
+2、用户SSH登录失败尝试次数超出限制后锁定用户 
+
+[root@localhost ~]# vim /etc/pam.d/sshd 
+
+	auth       required     pam_tally2.so deny=3 unlock_time=60 even_deny_root
+	
+		deny=3	最多允许同一个用户连接失败3次
+		unlock_time=60		锁60分钟 
+		even_deny_root		同样针对root用户有效 
+		
+解锁用户：
+
+[root@localhost ~]# pam_tally2 -u martin -r --reset		
+	
+	
+	
+3、pam_limits	系统资源限制
+
+/etc/security/limits.conf文件格式：
+
+	#<domain>      <type>  <item>         <value>
+	
+	nofile：打开最多的文件个数		number of file 
+	nbproc：最大进程数
+	
+	
+示例01：限制user01用户打开的进程数 
+
+[root@localhost ~]#  vim /etc/security/limits.conf
+
+	user01          hard    nproc           6
+	
+	
+nofile :  限制进程所能打开的文件数量
+
+	大并发的应用场景
+	
+查看系统当前进程所能打开的文件描述符数量 
+
+(py3) [root@jumpserver ~]# ulimit -n
+1024
+
+
+修改此值
+
+[root@localhost ~]# ulimit -n 65535			>>>临时生效
+[root@localhost ~]# ulimit -n
+65535
+
+
+	socket: Too many open files (24)
+
+	
+
+centos 6/5：
+
+(py3) [root@jumpserver ~]# vim /etc/security/limits.conf 
+
+    <用户名>    hard    nofile          65535
+	
+	
+centos 7：
+
+(py3) [root@jumpserver ~]# vim /etc/systemd/system.conf 
+
+
+	 51 DefaultLimitNOFILE=65535
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	

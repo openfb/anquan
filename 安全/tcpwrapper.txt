@@ -1,0 +1,49 @@
+TCPWrapper
+
+	作用：数据过滤 
+	
+	
+
+	iptables    四层防火墙
+
+		传输层    端口号 
+		
+			IP地址、端口号 
+
+	TCPWrapper  七层防火墙
+
+		应用程序 
+		根据应用程序做数据过滤 
+
+
+		
+/etc/hosts.allow
+	允许规则
+
+/etc/hosts.deny
+	拒绝规则 
+	
+	
+格式：
+
+	应用程序:客户端IP 
+
+
+/etc/hosts.deny 
+
+	vsftpd:172.13.1.1
+
+	vsftpd:172.13.1.0/255.255.255.0
+
+	vsftpd:172.13.1.0/255.255.255.0 except 172.13.1.254
+
+	
+
+
+
+[root@node01 ~]# ldd /usr/sbin/vsftpd 
+	linux-vdso.so.1 =>  (0x00007ffdf294a000)
+	libssl.so.10 => /lib64/libssl.so.10 (0x00007f1664f4c000)
+	libwrap.so.0 => /lib64/libwrap.so.0 (0x00007f1664d41000)
+
+

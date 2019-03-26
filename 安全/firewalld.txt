@@ -1,0 +1,140 @@
+firewall防火墙 
+
+	firewalld服务
+		工具：
+			firewall-cmd 	 命令行工具
+			firewall-config  图形化工具
+	
+	区域 zone 
+	
+
+firewall-cmd  命令行工具 
+
+
+1、查看所有区域名称
+
+[root@web-server ~]# firewall-cmd --get-zones 
+block dmz drop external home internal public trusted work
+
+	特殊区域：
+		trusted：允许所有服务放行	白名单
+		block/drop：拒绝所有服务	黑名单
+
+
+2、查看默认区域
+
+[root@web-server ~]# firewall-cmd --get-default-zone 
+public	
+	
+
+3、查看区域详细信息
+
+[root@web-server ~]# firewall-cmd --list-all --zone=public 
+	
+[root@web-server ~]# firewall-cmd --list-all 
+	
+
+4、修改默认区域 
+
+[root@web-server ~]# firewall-cmd --set-default-zone=trusted 
+success
+[root@web-server ~]# firewall-cmd --reload 
+success
+
+
+5、放行服务访问 
+
+[root@test-server ~]# firewall-cmd --permanent --add-service=http --zone=public 
+success
+[root@test-server ~]# firewall-cmd --reload 
+success
+
+
+[root@test-server ~]# firewall-cmd --permanent --add-port=3306/tcp --zone=public 
+success
+[root@test-server ~]# firewall-cmd --reload 
+success
+
+
+
+6、拒绝服务访问 
+
+[root@test-server ~]# firewall-cmd --permanent --remove-service=ftp  --zone=public 
+success
+[root@test-server ~]# firewall-cmd --permanent --remove-port=3306/tcp --zone=public 
+success
+[root@test-server ~]# firewall-cmd --reload
+
+
+
+7、block/drop  黑名单
+
+[root@test-server ~]# firewall-cmd --permanent --add-source=192.168.122.172 --zone=drop 
+success
+[root@test-server ~]# firewall-cmd --reload
+
+
+
+8、icmp协议   禁ping
+
+[root@test-server ~]# firewall-cmd --permanent --add-icmp-block=echo-request --zone=public
+success
+[root@test-server ~]# firewall-cmd --reload
+
+
+
+9、启用masquerade  
+
+[root@test-server ~]# firewall-cmd --permanent --add-masquerade --zone=public 
+success
+[root@test-server ~]# firewall-cmd --reload 
+success
+
+
+10、端口转发 
+
+1) 本地端口转发 
+
+[root@test-server ~]# firewall-cmd --permanent --add-forward-port=port=8888:proto=tcp:toport=22 --zone=public 
+success
+[root@test-server ~]# firewall-cmd --reload
+
+
+2) 远程端口转发
+
+[root@test-server ~]# firewall-cmd --permanent --add-forward-port=port=7777:proto=tcp:toport=22:toaddr=192.168.122.172 --zone=public 
+success
+[root@test-server ~]# firewall-cmd --reload
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
